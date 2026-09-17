@@ -1,0 +1,205 @@
+@import "tailwindcss";
+
+:root {
+  --bg: #100b00;
+  --secondary: #686464;
+  --indigo: #500aff;
+  --text: #8c88af;
+  --important: #ff4760;
+
+  --bg-surface: #191202;
+  --bg-hover: #261b03;
+  --border-color: #2e240a;
+  --indigo-glow: #500aff44;
+}
+
+body {
+  background-color: var(--bg);
+  color: var(--text);
+  font-family: system-ui, -apple-system, sans-serif;
+}
+
+
+.rbc-calendar {
+  background-color: var(--bg-surface);
+  color: var(--text);
+  border: 1px solid var(--border-color);
+  border-radius: 0.75rem;
+  overflow: hidden;
+}
+
+.rbc-header {
+  background-color: var(--bg);
+  border-bottom: 1px solid var(--border-color) !important;
+  border-left: 1px solid var(--border-color) !important;
+  color: var(--text);
+  padding: 10px 0;
+  font-weight: 600;
+}
+
+.rbc-month-view,
+.rbc-time-view,
+.rbc-agenda-view,
+.rbc-time-header,
+.rbc-month-row {
+  border-color: var(--border-color) !important;
+  background-color: transparent !important;
+}
+
+.rbc-day-bg + .rbc-day-bg,
+.rbc-month-row + .rbc-month-row,
+.rbc-time-header-content {
+  border-color: var(--border-color) !important;
+}
+
+.rbc-day-bg {
+  border-left: 1px solid var(--border-color) !important;
+}
+
+.rbc-time-view,
+.rbc-time-header,
+.rbc-time-content,
+.rbc-day-slot .rbc-time-slot,
+.rbc-timeslot-group {
+  border-color: var(--border-color) !important;
+}
+
+.rbc-day-slot {
+  border-left: 1px solid var(--border-color) !important;
+}
+
+.rbc-timeslot-group {
+  border-bottom: 1px solid var(--border-color) !important;
+  background-color: transparent !important;
+}
+
+.rbc-time-content {
+  border-top: 1px solid var(--border-color) !important;
+  border-left: 1px solid var(--border-color) !important;
+  background-color: transparent !important;
+}
+
+.rbc-current-time-indicator {
+  background-color: var(--important) !important;
+}
+
+.rbc-off-range-bg {
+  background-color: #0d0900 !important;
+  opacity: 0.5;
+}
+
+.rbc-today {
+  background-color: var(--bg-hover) !important;
+}
+
+.rbc-event {
+  background-color: var(--indigo) !important;
+  border-radius: 6px;
+  border: none !important;
+  box-shadow: 0 2px 4px rgba(80, 10, 255, 0.3);
+}
+
+.rbc-toolbar {
+  padding: 12px;
+  color: var(--text);
+}
+
+.rbc-toolbar button {
+  background-color: var(--bg-surface) !important;
+  color: var(--text) !important;
+  border: 1px solid var(--border-color) !important;
+  border-radius: 6px;
+  padding: 6px 12px;
+  transition: all 0.2s ease;
+}
+
+.rbc-toolbar button:hover {
+  background-color: var(--bg-hover) !important;
+  border-color: var(--secondary) !important;
+  color: #ffffff !important;
+}
+
+.rbc-toolbar button.rbc-active {
+  background-color: var(--indigo) !important;
+  color: #ffffff !important;
+  border-color: #ffffff00 !important;
+}
+
+.rbc-time-gutter, .rbc-header.rbc-today {
+  background-color: var(--bg-surface) !important;
+  color: var(--text) !important;
+  border-color: var(--border-color) !important;
+}
+
+
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--bg-surface);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--border-color);
+  border-radius: 4px;
+  border: 1px solid var(--bg);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--secondary);
+}
+
+
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--border-color) var(--bg-surface);
+}
+
+
+
+.rbc-time-content > * + * > *,
+.rbc-day-slot .rbc-time-slot,
+.rbc-time-view table td,
+.rbc-time-view table th {
+  border-color: var(--border-color) !important;
+}
+
+.rbc-timeslot-group {
+  border-bottom: 1px solid var(--border-color) !important;
+  background-color: var(--bg-surface) !important;
+}
+
+.rbc-day-slot {
+  background-color: var(--bg-surface) !important;
+}
+
+.rbc-time-header-content {
+  border-left: 1px solid var(--border-color) !important;
+}
+
+.rbc-time-content {
+  border-top: 1px solid var(--border-color) !important;
+}
+
+
+
+.rbc-calendar table,
+.rbc-calendar th,
+.rbc-calendar td,
+.rbc-time-view,
+.rbc-month-view,
+.rbc-agenda-view,
+.rbc-agenda-view table,
+.rbc-agenda-view th,
+.rbc-agenda-view td {
+  border-color: var(--border-color) !important;
+}
+
+.rbc-agenda-view td,
+.rbc-agenda-view th,
+.rbc-time-slot {
+  background-color: transparent !important;
+}
