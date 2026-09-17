@@ -18,7 +18,8 @@ contextBridge.exposeInMainWorld('ipcRenderer', {
     const [channel, ...omit] = args
     return ipcRenderer.invoke(channel, ...omit)
   },
+  getTusks: () => ipcRenderer.invoke('get-tusks'),
+  getTuskTypes: () => ipcRenderer.invoke('get-tusktypes'),
 
-  // You can expose other APTs you need here.
-  // ...
 })
+

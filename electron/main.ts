@@ -1,10 +1,66 @@
-import { app, BrowserWindow } from 'electron'
+import { app, BrowserWindow, ipcMain } from 'electron'
 import { createRequire } from 'node:module'
 import { fileURLToPath } from 'node:url'
 import path from 'node:path'
 
+
 const require = createRequire(import.meta.url)
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
+
+
+
+const Database = require('better-sqlite3');
+
+// Percorso sicuro per salvare il file SQLite nei dati utente dell'app
+const dbPath = path.join(app.getPath('userData'), 'kalenda.db');
+const db = new Database(dbPath);
+
+// Crea la tabella di esempio se non esiste
+db.prepare(`
+  CREATE TABLE IF NOT EXISTS TuskType (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    name TEXT,
+    description TEXT,
+    color TEXT
+  );
+
+`).run();
+
+db.prepare(`
+  CREATE TABLE IF NOT EXISTS Tusk (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    name TEXT,
+    start DATE,
+    end DATE,
+    idType INTEGER,
+    place TEXT,
+    timeBefore DATE
+  );
+
+`).run();
+
+
+// Gestione delle richieste dal frontend (Renderer) tramite IPC
+ipcMain.handle('get-tusktypes', () => {
+  try {
+    const stmt = db.prepare('SELECT * FROM TuskType');
+    return stmt.all();
+  } catch (error) {
+    console.error(error);
+    return [];
+  }
+});
+
+ipcMain.handle('get-tusks', () => {
+  try {
+    const stmt = db.prepare('SELECT * FROM Tusk');
+    return stmt.all();
+  } catch (error) {
+    console.error(error);
+    return [];
+  }
+});
+
 
 // The built directory structure
 //

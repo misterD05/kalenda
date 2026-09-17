@@ -1,10 +1,48 @@
-import { BrowserWindow, app } from "electron";
+import { BrowserWindow, app, ipcMain } from "electron";
 import { createRequire } from "node:module";
 import { fileURLToPath } from "node:url";
 import path from "node:path";
 //#region electron/main.ts
-createRequire(import.meta.url);
+var require = createRequire(import.meta.url);
 var __dirname = path.dirname(fileURLToPath(import.meta.url));
+var db = new (require("better-sqlite3"))(path.join(app.getPath("userData"), "kalenda.db"));
+db.prepare(`
+  CREATE TABLE IF NOT EXISTS TuskType (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    name TEXT,
+    description TEXT,
+    color TEXT
+  );
+
+`).run();
+db.prepare(`
+  CREATE TABLE IF NOT EXISTS Tusk (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    name TEXT,
+    start DATE,
+    end DATE,
+    idType INTEGER,
+    place TEXT,
+    timeBefore DATE
+  );
+
+`).run();
+ipcMain.handle("get-tusktypes", () => {
+	try {
+		return db.prepare("SELECT * FROM TuskType").all();
+	} catch (error) {
+		console.error(error);
+		return [];
+	}
+});
+ipcMain.handle("get-tusks", () => {
+	try {
+		return db.prepare("SELECT * FROM Tusk").all();
+	} catch (error) {
+		console.error(error);
+		return [];
+	}
+});
 process.env.APP_ROOT = path.join(__dirname, "..");
 var VITE_DEV_SERVER_URL = process.env["VITE_DEV_SERVER_URL"];
 var MAIN_DIST = path.join(process.env.APP_ROOT, "dist-electron");
