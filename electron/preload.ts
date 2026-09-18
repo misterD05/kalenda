@@ -20,6 +20,11 @@ contextBridge.exposeInMainWorld('ipcRenderer', {
   },
   getTusks: () => ipcRenderer.invoke('get-tusks'),
   getTuskTypes: () => ipcRenderer.invoke('get-tusktypes'),
-
+  insertTusk: ( data: any) => ipcRenderer.invoke('insert-tusk', data),
+  insertTuskType: (data: any) => ipcRenderer.invoke('insert-tusktype', data),
+  deleteTusk: ( id: number) => ipcRenderer.invoke('delete-tusk', id),
+  deleteTuskType: (id: number) => ipcRenderer.invoke('delete-tusktype', id),
+  updateTusks: ( data: any) => ipcRenderer.invoke('update-tusk', data),
+  updateTuskTypes: ( data: any) => ipcRenderer.invoke('update-tusktype', data),
 })
 

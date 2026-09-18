@@ -12,6 +12,8 @@ db.prepare(`
     name TEXT,
     description TEXT,
     color TEXT
+
+    
   );
 
 `).run();

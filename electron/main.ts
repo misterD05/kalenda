@@ -11,11 +11,10 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url))
 
 const Database = require('better-sqlite3');
 
-// Percorso sicuro per salvare il file SQLite nei dati utente dell'app
 const dbPath = path.join(app.getPath('userData'), 'kalenda.db');
 const db = new Database(dbPath);
 
-// Crea la tabella di esempio se non esiste
+
 db.prepare(`
   CREATE TABLE IF NOT EXISTS TuskType (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -34,33 +33,134 @@ db.prepare(`
     end DATE,
     idType INTEGER,
     place TEXT,
-    timeBefore DATE
+    timeBefore DATE,
+    FOREIGN KEY(idType) REFERENCES TuskType(id) ON DELETE SET NULL
   );
 
 `).run();
 
+  ipcMain.handle('insert-tusktype', (event, typeData) => {
+    try {
+      const stmt = db.prepare(
+        'INSERT INTO TuskType (name, description, color) VALUES (@name, @description, @color)'
+      );
+      // Usiamo i parametri denominati (@name) per sicurezza e pulizia
+      const result = stmt.run(typeData);
+      return { success: true, id: result.lastInsertRowid };
+    } catch (error) {
+      console.error('Errore insert-tusktype:', error);
+      return { success: false, error: error };
+    }
+  });
 
-// Gestione delle richieste dal frontend (Renderer) tramite IPC
-ipcMain.handle('get-tusktypes', () => {
-  try {
-    const stmt = db.prepare('SELECT * FROM TuskType');
-    return stmt.all();
-  } catch (error) {
-    console.error(error);
-    return [];
-  }
-});
+  ipcMain.handle('get-tusktypes', () => {
+    try {
+      return db.prepare('SELECT * FROM TuskType ORDER BY name ASC').all();
+    } catch (error) {
+      console.error('Errore get-tusktypes:', error);
+      return [];
+    }
+  });
 
-ipcMain.handle('get-tusks', () => {
-  try {
-    const stmt = db.prepare('SELECT * FROM Tusk');
-    return stmt.all();
-  } catch (error) {
-    console.error(error);
-    return [];
-  }
-});
+  ipcMain.handle('update-tusktype', (event, typeData) => {
+    try {
+      const stmt = db.prepare(`
+        UPDATE TuskType
+        SET name = @name, description = @description, color = @color
+        WHERE id = @id
+      `);
+      const result = stmt.run(typeData);
 
+      if (result.changes === 0) {
+        return { success: false, error: 'Tipo non trovato' };
+      }
+      return { success: true };
+    } catch (error) {
+      console.error('Errore update-tusktype:', error);
+      return { success: false, error: error };
+    }
+  });
+
+  ipcMain.handle('delete-tusktype', (event, typeId) => {
+    try {
+      const stmt = db.prepare('DELETE FROM TuskType WHERE id = ?');
+      const result = stmt.run(typeId);
+
+      if (result.changes === 0) {
+        return { success: false, error: 'Tipo non trovato' };
+      }
+      return { success: true };
+    } catch (error) {
+      console.error('Errore delete-tusktype:', error);
+      return { success: false, error: error };
+    }
+  });
+
+
+  ipcMain.handle('insert-tusk', (event, tuskData) => {
+    try {
+      const stmt = db.prepare(`
+        INSERT INTO Tusk (name, start, end, idType, place, timeBefore)
+        VALUES (@name, @start, @end, @idType, @place, @timeBefore)
+      `);
+      const result = stmt.run(tuskData);
+      return { success: true, id: result.lastInsertRowid };
+    } catch (error) {
+      console.error('Errore insert-tusk:', error);
+      return { success: false, error: error };
+    }
+  });
+
+  ipcMain.handle('get-tusks', () => {
+    try {
+      return db.prepare(`
+        SELECT
+          T.id, T.name, T.start, T.end, T.place, T.timeBefore,
+          TT.name as typeName, TT.color as typeColor
+        FROM Tusk T
+        LEFT JOIN TuskType TT ON T.idType = TT.id
+        ORDER BY T.start ASC
+      `).all();
+    } catch (error) {
+      console.error('Errore get-tusks:', error);
+      return [];
+    }
+  });
+
+  ipcMain.handle('update-tusk', (event, tuskData) => {
+    try {
+      const stmt = db.prepare(`
+        UPDATE Tusk
+        SET name = @name, start = @start, end = @end,
+            idType = @idType, place = @place, timeBefore = @timeBefore
+        WHERE id = @id
+      `);
+      const result = stmt.run(tuskData);
+
+      if (result.changes === 0) {
+        return { success: false, error: 'Task non trovato' };
+      }
+      return { success: true };
+    } catch (error) {
+      console.error('Errore update-tusk:', error);
+      return { success: false, error: error };
+    }
+  });
+
+  ipcMain.handle('delete-tusk', (event, tuskId) => {
+    try {
+      const stmt = db.prepare('DELETE FROM Tusk WHERE id = ?');
+      const result = stmt.run(tuskId);
+
+      if (result.changes === 0) {
+        return { success: false, error: 'Task non trovato' };
+      }
+      return { success: true };
+    } catch (error) {
+      console.error('Errore delete-tusk:', error);
+      return { success: false, error: error };
+    }
+  });
 
 // The built directory structure
 //

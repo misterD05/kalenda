@@ -3,6 +3,7 @@ import { Calendar, dateFnsLocalizer } from 'react-big-calendar'
 import { format, parse, startOfWeek, getDay } from 'date-fns'
 import 'react-big-calendar/lib/css/react-big-calendar.css'
 
+
 const localizer = dateFnsLocalizer({
     format,
     parse,
@@ -32,4 +33,9 @@ export function MyCalendar() {
             />
         </div>
     )
+}
+
+
+export function ControlBar() {
+
 }
