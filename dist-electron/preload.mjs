@@ -16,8 +16,16 @@ electron.contextBridge.exposeInMainWorld("ipcRenderer", {
 	invoke(...args) {
 		const [channel, ...omit] = args;
 		return electron.ipcRenderer.invoke(channel, ...omit);
-	},
+	}
+});
+electron.contextBridge.exposeInMainWorld("api", {
 	getTusks: () => electron.ipcRenderer.invoke("get-tusks"),
-	getTuskTypes: () => electron.ipcRenderer.invoke("get-tusktypes")
+	getTuskTypes: () => electron.ipcRenderer.invoke("get-tusktypes"),
+	insertTusk: (data) => electron.ipcRenderer.invoke("insert-tusk", data),
+	insertTuskType: (data) => electron.ipcRenderer.invoke("insert-tusktype", data),
+	deleteTusk: (id) => electron.ipcRenderer.invoke("delete-tusk", id),
+	deleteTuskType: (id) => electron.ipcRenderer.invoke("delete-tusktype", id),
+	updateTusks: (data) => electron.ipcRenderer.invoke("update-tusk", data),
+	updateTuskTypes: (data) => electron.ipcRenderer.invoke("update-tusktype", data)
 });
 //#endregion

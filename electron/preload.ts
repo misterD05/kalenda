@@ -17,7 +17,10 @@ contextBridge.exposeInMainWorld('ipcRenderer', {
   invoke(...args: Parameters<typeof ipcRenderer.invoke>) {
     const [channel, ...omit] = args
     return ipcRenderer.invoke(channel, ...omit)
-  },
+  }
+})
+
+contextBridge.exposeInMainWorld('api', {
   getTusks: () => ipcRenderer.invoke('get-tusks'),
   getTuskTypes: () => ipcRenderer.invoke('get-tusktypes'),
   insertTusk: ( data: any) => ipcRenderer.invoke('insert-tusk', data),
@@ -27,4 +30,3 @@ contextBridge.exposeInMainWorld('ipcRenderer', {
   updateTusks: ( data: any) => ipcRenderer.invoke('update-tusk', data),
   updateTuskTypes: ( data: any) => ipcRenderer.invoke('update-tusktype', data),
 })
-

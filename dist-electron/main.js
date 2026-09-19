@@ -12,8 +12,6 @@ db.prepare(`
     name TEXT,
     description TEXT,
     color TEXT
-
-    
   );
 
 `).run();
@@ -25,24 +23,132 @@ db.prepare(`
     end DATE,
     idType INTEGER,
     place TEXT,
-    timeBefore DATE
+    timeBefore DATE,
+    FOREIGN KEY(idType) REFERENCES TuskType(id) ON DELETE SET NULL
   );
 
 `).run();
+ipcMain.handle("insert-tusktype", (event, typeData) => {
+	try {
+		return {
+			success: true,
+			id: db.prepare("INSERT INTO TuskType (name, description, color) VALUES (@name, @description, @color)").run(typeData).lastInsertRowid
+		};
+	} catch (error) {
+		console.error("Errore insert-tusktype:", error);
+		return {
+			success: false,
+			error
+		};
+	}
+});
 ipcMain.handle("get-tusktypes", () => {
 	try {
-		return db.prepare("SELECT * FROM TuskType").all();
+		return db.prepare("SELECT * FROM TuskType ORDER BY name ASC").all();
 	} catch (error) {
-		console.error(error);
+		console.error("Errore get-tusktypes:", error);
 		return [];
+	}
+});
+ipcMain.handle("update-tusktype", (event, typeData) => {
+	try {
+		if (db.prepare(`
+        UPDATE TuskType
+        SET name = @name, description = @description, color = @color
+        WHERE id = @id
+      `).run(typeData).changes === 0) return {
+			success: false,
+			error: "Tipo non trovato"
+		};
+		return { success: true };
+	} catch (error) {
+		console.error("Errore update-tusktype:", error);
+		return {
+			success: false,
+			error
+		};
+	}
+});
+ipcMain.handle("delete-tusktype", (event, typeId) => {
+	try {
+		if (db.prepare("DELETE FROM TuskType WHERE id = ?").run(typeId).changes === 0) return {
+			success: false,
+			error: "Tipo non trovato"
+		};
+		return { success: true };
+	} catch (error) {
+		console.error("Errore delete-tusktype:", error);
+		return {
+			success: false,
+			error
+		};
+	}
+});
+ipcMain.handle("insert-tusk", (event, tuskData) => {
+	try {
+		return {
+			success: true,
+			id: db.prepare(`
+        INSERT INTO Tusk (name, start, end, idType, place, timeBefore)
+        VALUES (@name, @start, @end, @idType, @place, @timeBefore)
+      `).run(tuskData).lastInsertRowid
+		};
+	} catch (error) {
+		console.error("Errore insert-tusk:", error);
+		return {
+			success: false,
+			error
+		};
 	}
 });
 ipcMain.handle("get-tusks", () => {
 	try {
-		return db.prepare("SELECT * FROM Tusk").all();
+		return db.prepare(`
+        SELECT
+          T.id, T.name, T.start, T.end, T.place, T.timeBefore,
+          TT.name as typeName, TT.color as typeColor
+        FROM Tusk T
+        LEFT JOIN TuskType TT ON T.idType = TT.id
+        ORDER BY T.start ASC
+      `).all();
 	} catch (error) {
-		console.error(error);
+		console.error("Errore get-tusks:", error);
 		return [];
+	}
+});
+ipcMain.handle("update-tusk", (event, tuskData) => {
+	try {
+		if (db.prepare(`
+        UPDATE Tusk
+        SET name = @name, start = @start, end = @end,
+            idType = @idType, place = @place, timeBefore = @timeBefore
+        WHERE id = @id
+      `).run(tuskData).changes === 0) return {
+			success: false,
+			error: "Task non trovato"
+		};
+		return { success: true };
+	} catch (error) {
+		console.error("Errore update-tusk:", error);
+		return {
+			success: false,
+			error
+		};
+	}
+});
+ipcMain.handle("delete-tusk", (event, tuskId) => {
+	try {
+		if (db.prepare("DELETE FROM Tusk WHERE id = ?").run(tuskId).changes === 0) return {
+			success: false,
+			error: "Task non trovato"
+		};
+		return { success: true };
+	} catch (error) {
+		console.error("Errore delete-tusk:", error);
+		return {
+			success: false,
+			error
+		};
 	}
 });
 process.env.APP_ROOT = path.join(__dirname, "..");
