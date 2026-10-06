@@ -19,7 +19,6 @@ db.prepare(`
   CREATE TABLE IF NOT EXISTS TuskType (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     name TEXT,
-    description TEXT,
     color TEXT
   );
 
@@ -42,7 +41,7 @@ db.prepare(`
   ipcMain.handle('insert-tusktype', (event, typeData) => {
     try {
       const stmt = db.prepare(
-        'INSERT INTO TuskType (name, description, color) VALUES (@name, @description, @color)'
+        'INSERT INTO TuskType (name, color) VALUES (@name, @color)'
       );
       // Usiamo i parametri denominati (@name) per sicurezza e pulizia
       const result = stmt.run(typeData);
@@ -66,7 +65,7 @@ db.prepare(`
     try {
       const stmt = db.prepare(`
         UPDATE TuskType
-        SET name = @name, description = @description, color = @color
+        SET name = @name, color = @color
         WHERE id = @id
       `);
       const result = stmt.run(typeData);
@@ -115,7 +114,7 @@ db.prepare(`
     try {
       return db.prepare(`
         SELECT
-          T.id, T.name, T.start, T.end, T.place, T.timeBefore,
+          T.id, T.name, T.start, T.end, T.place, T.timeBefore, T.idType,
           TT.name as typeName, TT.color as typeColor
         FROM Tusk T
         LEFT JOIN TuskType TT ON T.idType = TT.id
@@ -189,6 +188,8 @@ function createWindow() {
     icon: path.join(process.env.VITE_PUBLIC, 'electron-vite.svg'),
     webPreferences: {
       preload: path.join(__dirname, 'preload.mjs'),
+      contextIsolation: true,
+      nodeIntegration: false,
     },
   })
 

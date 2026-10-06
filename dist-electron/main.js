@@ -10,7 +10,6 @@ db.prepare(`
   CREATE TABLE IF NOT EXISTS TuskType (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     name TEXT,
-    description TEXT,
     color TEXT
   );
 
@@ -32,7 +31,7 @@ ipcMain.handle("insert-tusktype", (event, typeData) => {
 	try {
 		return {
 			success: true,
-			id: db.prepare("INSERT INTO TuskType (name, description, color) VALUES (@name, @description, @color)").run(typeData).lastInsertRowid
+			id: db.prepare("INSERT INTO TuskType (name, color) VALUES (@name, @color)").run(typeData).lastInsertRowid
 		};
 	} catch (error) {
 		console.error("Errore insert-tusktype:", error);
@@ -54,7 +53,7 @@ ipcMain.handle("update-tusktype", (event, typeData) => {
 	try {
 		if (db.prepare(`
         UPDATE TuskType
-        SET name = @name, description = @description, color = @color
+        SET name = @name, color = @color
         WHERE id = @id
       `).run(typeData).changes === 0) return {
 			success: false,
@@ -105,7 +104,7 @@ ipcMain.handle("get-tusks", () => {
 	try {
 		return db.prepare(`
         SELECT
-          T.id, T.name, T.start, T.end, T.place, T.timeBefore,
+          T.id, T.name, T.start, T.end, T.place, T.timeBefore, T.idType,
           TT.name as typeName, TT.color as typeColor
         FROM Tusk T
         LEFT JOIN TuskType TT ON T.idType = TT.id
@@ -162,7 +161,11 @@ function createWindow() {
 		frame: false,
 		titleBarStyle: "hidden",
 		icon: path.join(process.env.VITE_PUBLIC, "electron-vite.svg"),
-		webPreferences: { preload: path.join(__dirname, "preload.mjs") }
+		webPreferences: {
+			preload: path.join(__dirname, "preload.mjs"),
+			contextIsolation: true,
+			nodeIntegration: false
+		}
 	});
 	win.webContents.on("did-finish-load", () => {
 		win?.webContents.send("main-process-message", (/* @__PURE__ */ new Date()).toLocaleString());

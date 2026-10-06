@@ -1,14 +1,17 @@
 # 📆 Kalenda
 
-An elctron/vite app to use instead of Google Calendar.
+A simple Electron + Vite app to use instead of Google Calendar. Your tasks are saved locally on your computer.
 
-Libraries used:
-```
-npm uninstall @fullcalendar/react @fullcalendar/core @fullcalendar/daygrid @fullcalendar/timegrid @fullcalendar/list @fullcalendar/interaction
+🚧 Work in progress.
 
-npm install date-fns
+## :bookmark_tabs: What it does
 
-npm install better-sqlite3
-```
+- Month, week, day and agenda views
+- Add, edit and delete tasks
+- Task types with colors
+- Everything stored locally with SQLite
 
-# 🚧 WORK IN PROGRESS
+## Credits
+
+Built with the help of [Claude](https://claude.ai) by Anthropic.
+Made with Electron, Vite, React, react-big-calendar, date-fns and better-sqlite3.

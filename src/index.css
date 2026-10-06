@@ -11,6 +11,35 @@
   --bg-hover: #261b03;
   --border-color: #2e240a;
   --indigo-glow: #500aff44;
+
+
+    /* Background */
+  --color-background-main: #100b00;
+  --color-background-surface: #191202;
+  --color-background-hover: #261b03;
+  --color-background-overlay: rgba(0, 0, 0, 0.6);
+  /* Borders and lines */
+  --color-border-subtle: #2e240a;
+  /* Testi */
+  --color-text-main: #8c88af;
+  --color-text-muted: #a1a1aa;
+  --color-text-inverted: #ffffff;
+  /* Palette Actions */
+  --color-brand-primary: #500aff;
+  --color-brand-primary-hover: #6366f1;
+  --color-brand-primary-fallback: #4f46e5;
+  --color-brand-secondary: #686464;
+  /*States and actions */
+  --color-action-edit: #d97706;
+  --color-action-edit-hover: #f59e0b;
+  --color-action-delete: #e11d48;
+  --color-action-delete-hover: #f43f5e;
+  --color-action-neutral: #3f3f46;
+  --color-action-neutral-hover: #52525b;
+  /* UI Elements / Components */
+  --color-ui-dark-surface: #27272a;
+  --color-ui-disabled-text: #71717a;
+  --color-ui-badge-default: #3b82f6;
 }
 
 body {
