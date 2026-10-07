@@ -2,6 +2,8 @@ import { app, BrowserWindow, ipcMain } from 'electron'
 import { createRequire } from 'node:module'
 import { fileURLToPath } from 'node:url'
 import path from 'node:path'
+import { registerIcsImport } from '../src/ics_import'
+
 
 
 const require = createRequire(import.meta.url)
@@ -161,6 +163,8 @@ db.prepare(`
     }
   });
 
+
+
 // The built directory structure
 //
 // ├─┬─┬ dist
@@ -204,6 +208,8 @@ function createWindow() {
     // win.loadFile('dist/index.html')
     win.loadFile(path.join(RENDERER_DIST, 'index.html'))
   }
+
+  registerIcsImport()
 }
 
 // Quit when all windows are closed, except on macOS. There, it's common

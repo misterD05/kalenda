@@ -59,6 +59,24 @@ interface TuskTypePayload {
     color: string;
 }
 
+interface IcsEvent {
+    name: string;
+    start: string;
+    end: string;
+    place: string | null;
+}
+
+interface IcsFile {
+    name: string;
+    events: IcsEvent[];
+}
+
+interface IcsImportResult {
+    canceled: boolean;
+    files: IcsFile[];
+    error?: string;
+}
+
 interface TuskApi {
     getTusks(): Promise<RawTusk[]>;
     getTuskTypes(): Promise<TuskType[]>;
@@ -68,6 +86,7 @@ interface TuskApi {
     insertTuskType(payload: TuskTypePayload): Promise<ApiResult>;
     updateTuskType(payload: TuskTypePayload & { id: number }): Promise<ApiResult>;
     deleteTuskType(id: number): Promise<ApiResult>;
+    importIcs(): Promise<IcsImportResult>;
     on(channel: string, callback: (...args: unknown[]) => void): void;
 }
 
@@ -94,6 +113,7 @@ interface TypeDraft {
 const DEFAULT_EVENT_COLOR = '#3174ad';
 const DEFAULT_TYPE_COLOR = '#500aff';
 const HOUR_MS = 60 * 60 * 1000;
+const IMPORT_COLORS = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899', '#14b8a6', '#f97316'];
 
 const locales = { it };
 
@@ -239,6 +259,15 @@ const eventStyles = `
 .rbc-calendar .rbc-event.tusk-event .rbc-event-content {
     color: inherit;
 }
+.rbc-calendar .rbc-month-view .rbc-event.tusk-event {
+    padding: 4px 8px;
+    font-size: 0.67rem;
+    min-height: 26px;
+    border-radius: 8px;
+}
+.rbc-calendar .rbc-month-view .rbc-row-segment {
+    padding: 0 4px 2px 4px;
+}
 `;
 
 const emptyForm: TaskForm = { name: '', start: '', end: '', place: '', idType: '' };
@@ -252,6 +281,7 @@ export function MyCalendar() {
     const [modalMode, setModalMode] = useState<'create' | 'modify' | null>(null);
     const [form, setForm] = useState<TaskForm>(emptyForm);
     const [isSaving, setIsSaving] = useState(false);
+    const [isImporting, setIsImporting] = useState(false);
 
     const [isTypesModalOpen, setIsTypesModalOpen] = useState(false);
     const [typeDraft, setTypeDraft] = useState<TypeDraft>(emptyTypeDraft);
@@ -390,6 +420,80 @@ export function MyCalendar() {
         }
     }
 
+    async function handleImport() {
+        if (isImporting) return;
+        setIsImporting(true);
+
+        try {
+            const result = await window.api.importIcs();
+            if (result.canceled) return;
+            if (result.error) {
+                alert('Error: ' + result.error);
+                return;
+            }
+
+            const makeKey = (name: string, start: Date, end: Date) =>
+                `${name}|${start.getTime()}|${end.getTime()}`;
+            const known = new Set(events.map((event) => makeKey(event.name, event.start, event.end)));
+            const sameName = (a: string, b: string) => a.trim().toLowerCase() === b.trim().toLowerCase();
+
+            let types = await loadTuskTypes();
+            let added = 0;
+            let skipped = 0;
+            let failed = 0;
+
+            for (const file of result.files) {
+                if (file.events.length === 0) continue;
+
+                let type = types.find((item) => sameName(item.name, file.name));
+                if (!type) {
+                    const color = IMPORT_COLORS[types.length % IMPORT_COLORS.length];
+                    const created = await run(() => window.api.insertTuskType({ name: file.name, color }));
+                    if (created) {
+                        types = await loadTuskTypes();
+                        type = types.find((item) => sameName(item.name, file.name));
+                    }
+                }
+                const idType = type?.id ?? null;
+
+                for (const item of file.events) {
+                    const key = makeKey(item.name, new Date(item.start), new Date(item.end));
+                    if (known.has(key)) {
+                        skipped++;
+                        continue;
+                    }
+                    try {
+                        const res = await window.api.insertTusk({
+                            name: item.name,
+                            start: item.start,
+                            end: item.end,
+                            place: item.place,
+                            idType,
+                            timeBefore: null,
+                        });
+                        if (res.success) {
+                            known.add(key);
+                            added++;
+                        } else {
+                            failed++;
+                        }
+                    } catch (error) {
+                        console.error(error);
+                        failed++;
+                    }
+                }
+            }
+
+            await Promise.all([refreshTypes(), refreshEvents()]);
+            alert(`Import finished: ${added} added, ${skipped} skipped, ${failed} failed`);
+        } catch (error) {
+            console.error(error);
+            alert('Error: ' + (error instanceof Error ? error.message : String(error)));
+        } finally {
+            setIsImporting(false);
+        }
+    }
+
     function handleSelectSlot(slot: SlotInfo) {
         if (slot.action === 'click') {
             setSelectedId(null);
@@ -481,6 +585,8 @@ export function MyCalendar() {
                 onModify={handleOpenModify}
                 onDelete={handleDelete}
                 onOpenTypes={() => setIsTypesModalOpen(true)}
+                onImport={handleImport}
+                isImporting={isImporting}
                 hasSelection={selectedEvent !== null}
             />
 
@@ -684,10 +790,12 @@ interface ControlBarProps {
     onModify: () => void;
     onDelete: () => void;
     onOpenTypes: () => void;
+    onImport: () => void;
+    isImporting: boolean;
     hasSelection: boolean;
 }
 
-export function ControlBar({ onNew, onModify, onDelete, onOpenTypes, hasSelection }: ControlBarProps) {
+export function ControlBar({ onNew, onModify, onDelete, onOpenTypes, onImport, isImporting, hasSelection }: ControlBarProps) {
     const enabledEdit = 'bg-(--color-action-edit) hover:bg-(--color-action-edit-hover) text-(--color-text-inverted)';
     const enabledDelete = 'bg-(--color-action-delete) hover:bg-(--color-action-delete-hover) text-(--color-text-inverted)';
     const disabled = 'bg-(--color-ui-dark-surface) text-(--color-ui-disabled-text) cursor-not-allowed';
@@ -721,6 +829,14 @@ export function ControlBar({ onNew, onModify, onDelete, onOpenTypes, hasSelectio
             </div>
 
             <div className="flex flex-col gap-3 w-full border-t border-(--color-border-subtle) pt-3">
+                <button
+                    type="button"
+                    onClick={onImport}
+                    disabled={isImporting}
+                    className="w-full py-2 bg-(--color-action-neutral) hover:bg-(--color-action-neutral-hover) text-(--color-text-inverted) font-medium rounded-xl text-xs transition shadow disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                    {isImporting ? 'Importing...' : 'Import'}
+                </button>
                 <button
                     type="button"
                     onClick={onOpenTypes}

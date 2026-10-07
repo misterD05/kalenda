@@ -29,7 +29,7 @@ contextBridge.exposeInMainWorld('api', {
   deleteTuskType: (id: number) => ipcRenderer.invoke('delete-tusktype', id),
   updateTusk: (data: any) => ipcRenderer.invoke('update-tusk', data),
   updateTuskType: (data: any) => ipcRenderer.invoke('update-tusktype', data),
-
+  importIcs: () => ipcRenderer.invoke('import-ics'),
   on: (channel: string, callback: (...args: any[]) => void) => {
       ipcRenderer.on(channel, (event, ...args) => callback(...args));
   }

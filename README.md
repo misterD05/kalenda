@@ -10,6 +10,7 @@ A simple Electron + Vite app to use instead of Google Calendar. Your tasks are s
 - Add, edit and delete tasks
 - Task types with colors
 - Everything stored locally with SQLite
+- Import calendars with files ```.ics```
 
 ## Credits
 

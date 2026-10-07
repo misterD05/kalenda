@@ -27,6 +27,7 @@ electron.contextBridge.exposeInMainWorld("api", {
 	deleteTuskType: (id) => electron.ipcRenderer.invoke("delete-tusktype", id),
 	updateTusk: (data) => electron.ipcRenderer.invoke("update-tusk", data),
 	updateTuskType: (data) => electron.ipcRenderer.invoke("update-tusktype", data),
+	importIcs: () => electron.ipcRenderer.invoke("import-ics"),
 	on: (channel, callback) => {
 		electron.ipcRenderer.on(channel, (event, ...args) => callback(...args));
 	}
